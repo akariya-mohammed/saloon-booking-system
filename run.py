@@ -122,9 +122,23 @@ def make_shell_context():
     }
 
 
+def auto_init_db():
+    """Automatically initialize database on first run."""
+    with app.app_context():
+        try:
+            # Check if tables exist
+            User.query.first()
+        except:
+            # Tables don't exist, initialize
+            print("First run detected. Initializing database...")
+            init_db()
+
+
 if __name__ == '__main__':
     if len(sys.argv) > 1 and sys.argv[1] == 'init-db':
         with app.app_context():
             init_db()
     else:
+        # Auto-initialize on first run
+        auto_init_db()
         app.run(debug=True, host='0.0.0.0', port=5000)
