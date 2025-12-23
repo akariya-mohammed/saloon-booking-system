@@ -4,6 +4,7 @@ from flask_jwt_extended import JWTManager
 from flask_mail import Mail
 from flask_cors import CORS
 from config import config
+from datetime import time
 
 db = SQLAlchemy()
 jwt = JWTManager()
@@ -61,6 +62,23 @@ def create_app(config_name='default'):
                 db.session.commit()
                 print("✅ Services seeded successfully!")
 
+            # Check if we need to seed availability
+            if Availability.query.count() == 0:
+                print("No availability found. Seeding availability...")
+
+                # Create default availability (Monday-Saturday, 9 AM - 6 PM)
+                for day in range(6):  # 0=Monday, 5=Saturday
+                    availability = Availability(
+                        day_of_week=day,
+                        start_time=time(9, 0),  # 9:00 AM
+                        end_time=time(18, 0),   # 6:00 PM
+                        is_available=True
+                    )
+                    db.session.add(availability)
+
+                db.session.commit()
+                print("✅ Availability seeded successfully!")
+
         except Exception as e:
             # Database tables don't exist, create them
             print("Initializing database tables...")
@@ -103,8 +121,8 @@ def create_app(config_name='default'):
             for day in range(6):  # 0=Monday, 5=Saturday
                 availability = Availability(
                     day_of_week=day,
-                    start_time='09:00',
-                    end_time='18:00',
+                    start_time=time(9, 0),  # 9:00 AM
+                    end_time=time(18, 0),   # 6:00 PM
                     is_available=True
                 )
                 db.session.add(availability)
