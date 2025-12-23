@@ -1,0 +1,361 @@
+{% extends "base.html" %}
+
+{% block title %}Book Appointment - GlamBook{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h2 class="text-center mb-4">Book Your Appointment</h2>
+
+            <!-- Service Selection -->
+            <div id="serviceSelectionSection" class="card mb-4">
+                <div class="card-body">
+                    <h4 class="card-title mb-3">Step 1: Choose a Service</h4>
+                    <div id="servicesGrid" class="row g-3">
+                        <!-- Services will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Date and Time Selection -->
+            <div id="dateTimeSection" class="card mb-4" style="display: none;">
+                <div class="card-body">
+                    <h4 class="card-title mb-3">Step 2: Select Date & Time</h4>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="appointmentDate" class="form-label">Date</label>
+                            <input type="date" class="form-control" id="appointmentDate">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="appointmentTime" class="form-label">Available Times</label>
+                            <select class="form-select" id="appointmentTime">
+                                <option value="">Select a date first</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes -->
+            <div id="notesSection" class="card mb-4" style="display: none;">
+                <div class="card-body">
+                    <h4 class="card-title mb-3">Step 3: Additional Information</h4>
+                    <div class="mb-3">
+                        <label for="appointmentNotes" class="form-label">Special Requests (Optional)</label>
+                        <textarea class="form-control" id="appointmentNotes" rows="3"
+                                  placeholder="Any specific requests or preferences?"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary -->
+            <div id="summarySection" class="card mb-4" style="display: none;">
+                <div class="card-body">
+                    <h4 class="card-title mb-3">Booking Summary</h4>
+                    <div id="bookingSummary"></div>
+                    <div class="d-grid gap-2">
+                        <button id="confirmBookingBtn" class="btn btn-primary btn-lg">
+                            Confirm Booking
+                        </button>
+                        <button id="cancelBookingBtn" class="btn btn-outline-secondary">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Login/Register Prompt -->
+            <div id="authPrompt" class="card mb-4" style="display: none;">
+                <div class="card-body text-center">
+                    <h4 class="card-title mb-3">Sign In Required</h4>
+                    <p>Please sign in or create an account to complete your booking.</p>
+                    <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#loginModal">
+                        Sign In
+                    </button>
+                    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#registerModal">
+                        Create Account
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Login Modal -->
+<div class="modal fade" id="loginModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Sign In</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="loginForm">
+                    <div class="mb-3">
+                        <label for="loginEmail" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="loginEmail" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="loginPassword" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="loginPassword" required>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Sign In</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Register Modal -->
+<div class="modal fade" id="registerModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create Account</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="registerForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="regFirstName" class="form-label">First Name</label>
+                            <input type="text" class="form-control" id="regFirstName" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="regLastName" class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="regLastName" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="regEmail" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="regEmail" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="regPhone" class="form-label">Phone</label>
+                        <input type="tel" class="form-control" id="regPhone">
+                    </div>
+                    <div class="mb-3">
+                        <label for="regPassword" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="regPassword" required>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Create Account</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let selectedService = null;
+let selectedDate = null;
+let selectedTime = null;
+let currentUser = null;
+
+// Check if user is logged in
+function checkAuth() {
+    const token = localStorage.getItem('access_token');
+    if (token) {
+        fetch('/api/auth/me', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+            throw new Error('Not authenticated');
+        })
+        .then(data => {
+            currentUser = data;
+        })
+        .catch(() => {
+            localStorage.removeItem('access_token');
+        });
+    }
+}
+
+// Load services
+function loadServices() {
+    fetch('/api/services')
+        .then(response => response.json())
+        .then(services => {
+            const grid = document.getElementById('servicesGrid');
+            grid.innerHTML = services.map(service => `
+                <div class="col-md-6">
+                    <div class="card service-card" onclick="selectService(${service.id}, '${service.name}', ${service.duration}, ${service.price})">
+                        <div class="card-body">
+                            <h5 class="card-title">${service.name}</h5>
+                            <p class="card-text">${service.description}</p>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">${service.duration} min</span>
+                                <span class="fw-bold">$${service.price}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        });
+}
+
+// Select service
+function selectService(id, name, duration, price) {
+    selectedService = { id, name, duration, price };
+    document.getElementById('dateTimeSection').style.display = 'block';
+    document.getElementById('notesSection').style.display = 'block';
+
+    // Highlight selected service
+    document.querySelectorAll('.service-card').forEach(card => {
+        card.classList.remove('border-primary');
+    });
+    event.currentTarget.classList.add('border-primary');
+}
+
+// Load available times
+document.getElementById('appointmentDate').addEventListener('change', function() {
+    selectedDate = this.value;
+    if (!selectedService) return;
+
+    fetch(`/api/bookings/availability?date=${selectedDate}&service_id=${selectedService.id}`)
+        .then(response => response.json())
+        .then(data => {
+            const timeSelect = document.getElementById('appointmentTime');
+            timeSelect.innerHTML = data.available_slots.length > 0
+                ? data.available_slots.map(slot => `<option value="${slot}">${slot}</option>`).join('')
+                : '<option value="">No available times</option>';
+
+            if (data.available_slots.length > 0) {
+                document.getElementById('summarySection').style.display = 'block';
+                updateSummary();
+            }
+        });
+});
+
+document.getElementById('appointmentTime').addEventListener('change', function() {
+    selectedTime = this.value;
+    updateSummary();
+});
+
+// Update booking summary
+function updateSummary() {
+    if (!selectedService || !selectedDate || !selectedTime) return;
+
+    const summary = document.getElementById('bookingSummary');
+    summary.innerHTML = `
+        <div class="mb-3">
+            <strong>Service:</strong> ${selectedService.name}<br>
+            <strong>Date:</strong> ${selectedDate}<br>
+            <strong>Time:</strong> ${selectedTime}<br>
+            <strong>Duration:</strong> ${selectedService.duration} minutes<br>
+            <strong>Price:</strong> $${selectedService.price}
+        </div>
+    `;
+}
+
+// Confirm booking
+document.getElementById('confirmBookingBtn').addEventListener('click', function() {
+    if (!currentUser) {
+        document.getElementById('authPrompt').style.display = 'block';
+        return;
+    }
+
+    const notes = document.getElementById('appointmentNotes').value;
+
+    fetch('/api/bookings', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        },
+        body: JSON.stringify({
+            service_id: selectedService.id,
+            appointment_date: selectedDate,
+            appointment_time: selectedTime,
+            notes: notes
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message) {
+            alert('Booking created successfully! Pending admin approval.');
+            window.location.href = '/';
+        }
+    })
+    .catch(error => {
+        alert('Booking failed: ' + error.message);
+    });
+});
+
+// Login form
+document.getElementById('loginForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            email: document.getElementById('loginEmail').value,
+            password: document.getElementById('loginPassword').value
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.access_token) {
+            localStorage.setItem('access_token', data.access_token);
+            location.reload();
+        }
+    })
+    .catch(error => alert('Login failed'));
+});
+
+// Register form
+document.getElementById('registerForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            email: document.getElementById('regEmail').value,
+            password: document.getElementById('regPassword').value,
+            first_name: document.getElementById('regFirstName').value,
+            last_name: document.getElementById('regLastName').value,
+            phone: document.getElementById('regPhone').value
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.access_token) {
+            localStorage.setItem('access_token', data.access_token);
+            location.reload();
+        }
+    })
+    .catch(error => alert('Registration failed'));
+});
+
+// Initialize
+checkAuth();
+loadServices();
+</script>
+
+<style>
+.service-card {
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.service-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.border-primary {
+    border: 2px solid #0d6efd !important;
+}
+</style>
+{% endblock %}
