@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="fw-bold">
+                <i class="fas fa-tachometer-alt me-2"></i>Admin Dashboard
+            </h2>
+            <p class="text-muted">Manage your salon bookings and services</p>
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-outline-danger" onclick="logout()">
+                <i class="fas fa-sign-out-alt me-2"></i>Logout
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card dashboard-card border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Total Bookings</h6>
+                            <h3 class="fw-bold mb-0" id="totalBookings">0</h3>
+                        </div>
+                        <div class="bg-primary bg-opacity-10 rounded-circle p-3">
+                            <i class="fas fa-calendar-check fa-2x text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card dashboard-card border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Pending</h6>
+                            <h3 class="fw-bold mb-0" id="pendingBookings">0</h3>
+                        </div>
+                        <div class="bg-warning bg-opacity-10 rounded-circle p-3">
+                            <i class="fas fa-clock fa-2x text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card dashboard-card border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Confirmed</h6>
+                            <h3 class="fw-bold mb-0" id="confirmedBookings">0</h3>
+                        </div>
+                        <div class="bg-success bg-opacity-10 rounded-circle p-3">
+                            <i class="fas fa-check-circle fa-2x text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card dashboard-card border-0">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Total Customers</h6>
+                            <h3 class="fw-bold mb-0" id="totalCustomers">0</h3>
+                        </div>
+                        <div class="bg-info bg-opacity-10 rounded-circle p-3">
+                            <i class="fas fa-users fa-2x text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Appointments Table -->
+    <div class="card dashboard-card border-0">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0 fw-bold">
+                <i class="fas fa-list me-2"></i>Recent Appointments
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Customer</th>
+                            <th>Service</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="appointmentsTable">
+                        <tr>
+                            <td colspan="7" class="text-center py-5">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Check if user is admin
+function checkAdmin() {
+    const token = localStorage.getItem('access_token');
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+    if (!token || !user.is_admin) {
+        window.location.href = '/login';
+        return;
+    }
+
+    loadDashboardData();
+}
+
+async function loadDashboardData() {
+    const token = localStorage.getItem('access_token');
+
+    try {
+        // Load appointments
+        const response = await fetch('/api/admin/appointments', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (!response.ok) {
+            if (response.status === 401) {
+                localStorage.clear();
+                window.location.href = '/login';
+                return;
+            }
+            throw new Error('Failed to load appointments');
+        }
+
+        const data = await response.json();
+        displayAppointments(data.appointments || []);
+        updateStats(data.appointments || []);
+
+        // Load customers count
+        const customersResponse = await fetch('/api/admin/customers', {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (customersResponse.ok) {
+            const customersData = await customersResponse.json();
+            document.getElementById('totalCustomers').textContent = customersData.customers?.length || 0;
+        }
+    } catch (error) {
+        console.error('Error loading dashboard:', error);
+        document.getElementById('appointmentsTable').innerHTML =
+            '<tr><td colspan="7" class="text-center text-danger py-5">Failed to load appointments</td></tr>';
+    }
+}
+
+function updateStats(appointments) {
+    document.getElementById('totalBookings').textContent = appointments.length;
+
+    const pending = appointments.filter(a => a.status === 'pending').length;
+    const confirmed = appointments.filter(a => a.status === 'confirmed').length;
+
+    document.getElementById('pendingBookings').textContent = pending;
+    document.getElementById('confirmedBookings').textContent = confirmed;
+}
+
+function displayAppointments(appointments) {
+    const tbody = document.getElementById('appointmentsTable');
+
+    if (appointments.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-5 text-muted">No appointments found</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = appointments.map(apt => {
+        const statusColors = {
+            'pending': 'warning',
+            'confirmed': 'success',
+            'cancelled': 'danger',
+            'completed': 'secondary'
+        };
+
+        const date = new Date(apt.appointment_date + 'T00:00:00').toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        });
+
+        return `
+            <tr>
+                <td>${apt.id}</td>
+                <td>
+                    <div>${apt.customer_name}</div>
+                    <small class="text-muted">${apt.customer_email}</small>
+                </td>
+                <td>${apt.service_name}</td>
+                <td>${date}</td>
+                <td>${apt.appointment_time}</td>
+                <td>
+                    <span class="badge bg-${statusColors[apt.status] || 'secondary'}">
+                        ${apt.status}
+                    </span>
+                </td>
+                <td>
+                    ${apt.status === 'pending' ? `
+                        <button class="btn btn-sm btn-success me-1" onclick="updateStatus(${apt.id}, 'confirmed')">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="updateStatus(${apt.id}, 'cancelled')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    ` : apt.status === 'confirmed' ? `
+                        <button class="btn btn-sm btn-primary me-1" onclick="updateStatus(${apt.id}, 'completed')">
+                            <i class="fas fa-check-double"></i>
+                        </button>
+                    ` : ''}
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+async function updateStatus(appointmentId, status) {
+    const token = localStorage.getItem('access_token');
+
+    try {
+        const response = await fetch(`/api/admin/appointments/${appointmentId}/status`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ status })
+        });
+
+        if (response.ok) {
+            loadDashboardData();
+        } else {
+            alert('Failed to update status');
+        }
+    } catch (error) {
+        console.error('Error updating status:', error);
+        alert('An error occurred');
+    }
+}
+
+function logout() {
+    localStorage.clear();
+    window.location.href = '/login';
+}
+
+// Load data on page load
+document.addEventListener('DOMContentLoaded', checkAdmin);
+</script>
+{% endblock %}
