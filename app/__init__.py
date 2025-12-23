@@ -79,6 +79,22 @@ def create_app(config_name='default'):
                 db.session.commit()
                 print("✅ Availability seeded successfully!")
 
+            # Check if admin user exists
+            admin = User.query.filter_by(email='admin@glambook.com').first()
+            if not admin:
+                print("No admin user found. Creating admin...")
+                admin = User(
+                    email='admin@glambook.com',
+                    first_name='Admin',
+                    last_name='User',
+                    phone='1234567890',
+                    is_admin=True
+                )
+                admin.set_password('admin123')
+                db.session.add(admin)
+                db.session.commit()
+                print("✅ Admin user created successfully!")
+
         except Exception as e:
             # Database tables don't exist, create them
             print("Initializing database tables...")
