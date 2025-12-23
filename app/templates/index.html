@@ -2,17 +2,26 @@
 
 {% block content %}
 <!-- Hero Section -->
-<section class="hero-section">
+<section class="hero-section" id="home">
     <div class="container">
         <div class="row align-items-center min-vh-75">
-            <div class="col-lg-6">
-                <h1 class="display-3 fw-bold mb-4">Your Hair, Our Passion</h1>
-                <p class="lead mb-4">Book professional hair styling services with ease. Experience luxury and expertise at GlamBook.</p>
-                <a href="/booking" class="btn btn-primary btn-lg px-5 py-3">Book Now</a>
+            <div class="col-lg-7">
+                <h1 class="display-2 fw-bold mb-4 fade-in">Transform Your Look</h1>
+                <p class="lead mb-4 fade-in" style="animation-delay: 0.2s; font-size: 1.3rem;">
+                    Experience the art of professional hair styling. Book your appointment with ease and step into luxury.
+                </p>
+                <div class="fade-in" style="animation-delay: 0.4s;">
+                    <a href="/booking" class="btn btn-primary btn-lg px-5 py-3 me-3">
+                        <i class="fas fa-calendar-check me-2"></i>Book Appointment
+                    </a>
+                    <a href="#services" class="btn btn-light btn-lg px-5 py-3">
+                        <i class="fas fa-chevron-down me-2"></i>View Services
+                    </a>
+                </div>
             </div>
-            <div class="col-lg-6">
-                <div class="hero-image">
-                    <i class="fas fa-user-crown fa-10x text-primary opacity-25"></i>
+            <div class="col-lg-5">
+                <div class="hero-image float-animation">
+                    <i class="fas fa-cut fa-10x" style="color: rgba(255,255,255,0.3);"></i>
                 </div>
             </div>
         </div>
@@ -20,11 +29,14 @@
 </section>
 
 <!-- Services Section -->
-<section class="py-5 bg-light">
+<section class="py-5 bg-light" id="services">
     <div class="container">
         <div class="text-center mb-5">
-            <h2 class="display-5 fw-bold">Our Services</h2>
-            <p class="lead text-muted">Professional hair care tailored to your needs</p>
+            <h2 class="display-5 fw-bold">Our Premium Services</h2>
+            <p class="lead text-muted">
+                <i class="fas fa-sparkles text-primary me-2"></i>
+                Professional hair care tailored to your unique style
+            </p>
         </div>
         <div class="row g-4" id="services-container">
             <!-- Services will be loaded dynamically -->
@@ -72,9 +84,16 @@
 <!-- CTA Section -->
 <section class="cta-section py-5 bg-primary text-white">
     <div class="container text-center">
-        <h2 class="display-5 fw-bold mb-4">Ready to Transform Your Look?</h2>
-        <p class="lead mb-4">Book your appointment today and experience professional hair care</p>
-        <a href="/booking" class="btn btn-light btn-lg px-5 py-3">Get Started</a>
+        <h2 class="display-4 fw-bold mb-4">
+            <i class="fas fa-magic me-3"></i>
+            Ready to Transform Your Look?
+        </h2>
+        <p class="lead mb-5" style="font-size: 1.3rem;">
+            Book your appointment today and experience the magic of professional hair care
+        </p>
+        <a href="/booking" class="btn btn-light btn-lg px-5 py-3">
+            <i class="fas fa-star me-2"></i>Get Started Now
+        </a>
     </div>
 </section>
 {% endblock %}
@@ -90,21 +109,47 @@
             const container = document.getElementById('services-container');
             container.innerHTML = '';
 
-            data.services.slice(0, 6).forEach(service => {
+            data.services.slice(0, 6).forEach((service, index) => {
                 const col = document.createElement('div');
-                col.className = 'col-md-6 col-lg-4';
+                col.className = 'col-md-6 col-lg-4 fade-in';
+                col.style.animationDelay = `${index * 0.1}s`;
+
+                const icons = {
+                    'Haircut': 'fa-cut',
+                    'Coloring': 'fa-palette',
+                    'Color': 'fa-palette',
+                    'Blowout': 'fa-wind',
+                    'Conditioning': 'fa-spa',
+                    'Keratin': 'fa-magic',
+                    'Bridal': 'fa-crown',
+                    'Treatment': 'fa-heart'
+                };
+
+                let serviceIcon = 'fa-star';
+                for (let key in icons) {
+                    if (service.name.includes(key)) {
+                        serviceIcon = icons[key];
+                        break;
+                    }
+                }
+
                 col.innerHTML = `
                     <div class="card h-100 service-card">
                         <div class="card-body">
-                            <h5 class="card-title">${service.name}</h5>
-                            <p class="card-text text-muted">${service.description || ''}</p>
-                            <div class="d-flex justify-content-between align-items-center mt-3">
-                                <span class="text-primary fw-bold">$${service.price}</span>
-                                <span class="text-muted"><i class="far fa-clock"></i> ${service.duration} min</span>
+                            <div class="text-center mb-3">
+                                <i class="fas ${serviceIcon} fa-3x text-primary"></i>
+                            </div>
+                            <h5 class="card-title text-center">${service.name}</h5>
+                            <p class="card-text text-muted text-center">${service.description || ''}</p>
+                            <div class="d-flex justify-content-between align-items-center mt-4">
+                                <span class="text-primary fw-bold fs-5">$${service.price}</span>
+                                <span class="text-muted"><i class="far fa-clock me-1"></i>${service.duration} min</span>
                             </div>
                         </div>
-                        <div class="card-footer bg-transparent border-0">
-                            <a href="/booking?service=${service.id}" class="btn btn-outline-primary w-100">Book Now</a>
+                        <div class="card-footer bg-transparent border-0 pb-3">
+                            <a href="/booking?service=${service.id}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-calendar-plus me-2"></i>Book Now
+                            </a>
                         </div>
                     </div>
                 `;
