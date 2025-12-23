@@ -41,11 +41,15 @@ def create_app(config_name='default'):
         except Exception as e:
             # Database tables don't exist, create them
             print("Initializing database tables...")
+
+            # Rollback any failed transaction
+            db.session.rollback()
+
+            # Create all tables
             db.create_all()
 
             # Create default admin user and sample data
             from app.models import Service, Availability
-            import bcrypt
 
             # Create admin user
             admin = User(
@@ -82,7 +86,11 @@ def create_app(config_name='default'):
                 )
                 db.session.add(availability)
 
-            db.session.commit()
-            print("✅ Database initialized successfully!")
+            try:
+                db.session.commit()
+                print("✅ Database initialized successfully!")
+            except Exception as commit_error:
+                db.session.rollback()
+                print(f"❌ Database initialization failed: {commit_error}")
 
     return app
