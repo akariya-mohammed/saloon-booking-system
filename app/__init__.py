@@ -36,8 +36,31 @@ def create_app(config_name='default'):
     with app.app_context():
         try:
             # Try to query users table - if it fails, database needs initialization
-            from app.models import User
+            from app.models import User, Service, Availability
+
+            # Check if tables exist
             User.query.first()
+
+            # Check if we need to seed services
+            if Service.query.count() == 0:
+                print("No services found. Seeding services...")
+
+                services_data = [
+                    {'name': 'Women\'s Haircut', 'description': 'Professional haircut and styling', 'duration': 60, 'price': 50.00, 'is_active': True},
+                    {'name': 'Hair Coloring', 'description': 'Full color or highlights', 'duration': 120, 'price': 120.00, 'is_active': True},
+                    {'name': 'Blowout', 'description': 'Wash and professional blowout', 'duration': 45, 'price': 35.00, 'is_active': True},
+                    {'name': 'Deep Conditioning', 'description': 'Restorative hair treatment', 'duration': 30, 'price': 40.00, 'is_active': True},
+                    {'name': 'Keratin Treatment', 'description': 'Smoothing keratin treatment', 'duration': 180, 'price': 250.00, 'is_active': True},
+                    {'name': 'Bridal Styling', 'description': 'Wedding hair styling', 'duration': 90, 'price': 150.00, 'is_active': True}
+                ]
+
+                for service_data in services_data:
+                    service = Service(**service_data)
+                    db.session.add(service)
+
+                db.session.commit()
+                print("✅ Services seeded successfully!")
+
         except Exception as e:
             # Database tables don't exist, create them
             print("Initializing database tables...")
@@ -64,12 +87,12 @@ def create_app(config_name='default'):
 
             # Create sample services
             services_data = [
-                {'name': 'Women\'s Haircut', 'description': 'Professional haircut and styling', 'duration': 60, 'price': 50.00},
-                {'name': 'Hair Coloring', 'description': 'Full color or highlights', 'duration': 120, 'price': 120.00},
-                {'name': 'Blowout', 'description': 'Wash and professional blowout', 'duration': 45, 'price': 35.00},
-                {'name': 'Deep Conditioning', 'description': 'Restorative hair treatment', 'duration': 30, 'price': 40.00},
-                {'name': 'Keratin Treatment', 'description': 'Smoothing keratin treatment', 'duration': 180, 'price': 250.00},
-                {'name': 'Bridal Styling', 'description': 'Wedding hair styling', 'duration': 90, 'price': 150.00}
+                {'name': 'Women\'s Haircut', 'description': 'Professional haircut and styling', 'duration': 60, 'price': 50.00, 'is_active': True},
+                {'name': 'Hair Coloring', 'description': 'Full color or highlights', 'duration': 120, 'price': 120.00, 'is_active': True},
+                {'name': 'Blowout', 'description': 'Wash and professional blowout', 'duration': 45, 'price': 35.00, 'is_active': True},
+                {'name': 'Deep Conditioning', 'description': 'Restorative hair treatment', 'duration': 30, 'price': 40.00, 'is_active': True},
+                {'name': 'Keratin Treatment', 'description': 'Smoothing keratin treatment', 'duration': 180, 'price': 250.00, 'is_active': True},
+                {'name': 'Bridal Styling', 'description': 'Wedding hair styling', 'duration': 90, 'price': 150.00, 'is_active': True}
             ]
 
             for service_data in services_data:
