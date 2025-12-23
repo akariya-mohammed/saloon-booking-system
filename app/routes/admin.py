@@ -230,6 +230,45 @@ def remove_blocked_date(blocked_date_id):
     return jsonify({'message': 'Blocked date removed successfully'}), 200
 
 
+@bp.route('/appointments/<int:appointment_id>/status', methods=['PUT'])
+@jwt_required()
+def update_appointment_status(appointment_id):
+    """Update appointment status (admin only)."""
+    if not admin_required():
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    appointment = Appointment.query.get(appointment_id)
+
+    if not appointment:
+        return jsonify({'error': 'Appointment not found'}), 404
+
+    data = request.get_json()
+    new_status = data.get('status')
+
+    if new_status not in ['pending', 'confirmed', 'cancelled', 'completed']:
+        return jsonify({'error': 'Invalid status'}), 400
+
+    appointment.status = new_status
+    db.session.commit()
+
+    return jsonify({
+        'message': 'Status updated successfully',
+        'appointment': appointment.to_dict()
+    }), 200
+
+
+@bp.route('/customers', methods=['GET'])
+@jwt_required()
+def get_customers():
+    """Get all customers (admin only)."""
+    if not admin_required():
+        return jsonify({'error': 'Unauthorized'}), 403
+
+    customers = User.query.filter_by(is_admin=False).all()
+
+    return jsonify({'customers': [customer.to_dict() for customer in customers]}), 200
+
+
 @bp.route('/analytics', methods=['GET'])
 @jwt_required()
 def get_analytics():
