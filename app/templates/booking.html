@@ -5,7 +5,7 @@
 {% block content %}
 <div class="container my-5">
     <div class="row">
-        <div class="col-lg-8 mx-auto">
+        <div class="col-lg-10 mx-auto">
             <div class="text-center mb-5">
                 <h2 class="display-5 fw-bold mb-3">
                     <i class="fas fa-calendar-star text-primary me-2"></i>
@@ -16,58 +16,92 @@
                 </p>
             </div>
 
-            <!-- Service Selection -->
+            <!-- Progress Steps -->
+            <div class="progress-steps mb-5">
+                <div class="progress-step active" id="step1Indicator">
+                    <div class="step-circle">1</div>
+                    <div class="step-label">Choose Service</div>
+                </div>
+                <div class="progress-step" id="step2Indicator">
+                    <div class="step-circle">2</div>
+                    <div class="step-label">Select Date</div>
+                </div>
+                <div class="progress-step" id="step3Indicator">
+                    <div class="step-circle">3</div>
+                    <div class="step-label">Choose Time</div>
+                </div>
+                <div class="progress-step" id="step4Indicator">
+                    <div class="step-circle">4</div>
+                    <div class="step-label">Confirm</div>
+                </div>
+            </div>
+
+            <!-- Step 1: Service Selection -->
             <div id="serviceSelectionSection" class="card mb-4">
                 <div class="card-body">
-                    <h4 class="card-title mb-3">Step 1: Choose a Service</h4>
-                    <div id="servicesGrid" class="row g-3">
-                        <!-- Services will be loaded here -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Date and Time Selection -->
-            <div id="dateTimeSection" class="card mb-4" style="display: none;">
-                <div class="card-body">
-                    <h4 class="card-title mb-3">Step 2: Select Date & Time</h4>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="appointmentDate" class="form-label">Date</label>
-                            <input type="date" class="form-control" id="appointmentDate">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="appointmentTime" class="form-label">Available Times</label>
-                            <select class="form-select" id="appointmentTime">
-                                <option value="">Select a date first</option>
-                            </select>
+                    <h4 class="card-title mb-4">
+                        <i class="fas fa-spa me-2 text-primary"></i>
+                        Choose Your Service
+                    </h4>
+                    <div id="servicesGrid" class="row g-4">
+                        <div class="col-12 text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading services...</span>
+                            </div>
+                            <p class="mt-3 text-muted">Loading our premium services...</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Notes -->
-            <div id="notesSection" class="card mb-4" style="display: none;">
+            <!-- Step 2: Calendar Selection -->
+            <div id="calendarSection" class="card mb-4" style="display: none;">
                 <div class="card-body">
-                    <h4 class="card-title mb-3">Step 3: Additional Information</h4>
-                    <div class="mb-3">
-                        <label for="appointmentNotes" class="form-label">Special Requests (Optional)</label>
+                    <h4 class="card-title mb-4">
+                        <i class="fas fa-calendar-alt me-2 text-primary"></i>
+                        Select Your Preferred Date
+                    </h4>
+                    <div id="calendar" class="booking-calendar"></div>
+                </div>
+            </div>
+
+            <!-- Step 3: Time Selection -->
+            <div id="timeSection" class="card mb-4" style="display: none;">
+                <div class="card-body">
+                    <h4 class="card-title mb-4">
+                        <i class="fas fa-clock me-2 text-primary"></i>
+                        Choose Your Time Slot
+                    </h4>
+                    <div id="timeSlots" class="time-slots-grid"></div>
+                </div>
+            </div>
+
+            <!-- Step 4: Notes and Summary -->
+            <div id="confirmSection" class="card mb-4" style="display: none;">
+                <div class="card-body">
+                    <h4 class="card-title mb-4">
+                        <i class="fas fa-check-circle me-2 text-primary"></i>
+                        Review & Confirm
+                    </h4>
+
+                    <!-- Booking Summary -->
+                    <div id="bookingSummary" class="alert alert-info mb-4"></div>
+
+                    <!-- Additional Notes -->
+                    <div class="mb-4">
+                        <label for="appointmentNotes" class="form-label fw-bold">
+                            <i class="fas fa-comment me-2"></i>Special Requests (Optional)
+                        </label>
                         <textarea class="form-control" id="appointmentNotes" rows="3"
-                                  placeholder="Any specific requests or preferences?"></textarea>
+                                  placeholder="Any specific requests or preferences? (e.g., preferred stylist, hair concerns)"></textarea>
                     </div>
-                </div>
-            </div>
 
-            <!-- Summary -->
-            <div id="summarySection" class="card mb-4" style="display: none;">
-                <div class="card-body">
-                    <h4 class="card-title mb-3">Booking Summary</h4>
-                    <div id="bookingSummary"></div>
                     <div class="d-grid gap-2">
                         <button id="confirmBookingBtn" class="btn btn-primary btn-lg">
-                            Confirm Booking
+                            <i class="fas fa-calendar-check me-2"></i>Confirm Booking
                         </button>
-                        <button id="cancelBookingBtn" class="btn btn-outline-secondary">
-                            Cancel
+                        <button id="backBtn" class="btn btn-outline-secondary" onclick="goBack()">
+                            <i class="fas fa-arrow-left me-2"></i>Go Back
                         </button>
                     </div>
                 </div>
@@ -75,14 +109,15 @@
 
             <!-- Login/Register Prompt -->
             <div id="authPrompt" class="card mb-4" style="display: none;">
-                <div class="card-body text-center">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-user-lock fa-3x text-primary mb-3"></i>
                     <h4 class="card-title mb-3">Sign In Required</h4>
-                    <p>Please sign in or create an account to complete your booking.</p>
-                    <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#loginModal">
-                        Sign In
+                    <p class="text-muted mb-4">Please sign in or create an account to complete your booking.</p>
+                    <button class="btn btn-primary btn-lg me-2" data-bs-toggle="modal" data-bs-target="#loginModal">
+                        <i class="fas fa-sign-in-alt me-2"></i>Sign In
                     </button>
-                    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#registerModal">
-                        Create Account
+                    <button class="btn btn-outline-primary btn-lg" data-bs-toggle="modal" data-bs-target="#registerModal">
+                        <i class="fas fa-user-plus me-2"></i>Create Account
                     </button>
                 </div>
             </div>
@@ -163,6 +198,8 @@ let selectedService = null;
 let selectedDate = null;
 let selectedTime = null;
 let currentUser = null;
+let currentMonth = new Date().getMonth();
+let currentYear = new Date().getFullYear();
 
 // Check if user is logged in
 function checkAuth() {
@@ -192,75 +229,235 @@ function checkAuth() {
 function loadServices() {
     fetch('/api/services')
         .then(response => response.json())
-        .then(services => {
+        .then(data => {
             const grid = document.getElementById('servicesGrid');
-            grid.innerHTML = services.map(service => `
-                <div class="col-md-6">
-                    <div class="card service-card" onclick="selectService(${service.id}, '${service.name}', ${service.duration}, ${service.price})">
-                        <div class="card-body">
-                            <h5 class="card-title">${service.name}</h5>
-                            <p class="card-text">${service.description}</p>
-                            <div class="d-flex justify-content-between">
-                                <span class="text-muted">${service.duration} min</span>
-                                <span class="fw-bold">$${service.price}</span>
+
+            if (!data.services || data.services.length === 0) {
+                grid.innerHTML = '<div class="col-12 text-center py-5"><p class="text-muted">No services available at the moment.</p></div>';
+                return;
+            }
+
+            const icons = {
+                'Haircut': 'fa-cut',
+                'Color': 'fa-palette',
+                'Blowout': 'fa-wind',
+                'Conditioning': 'fa-spa',
+                'Keratin': 'fa-magic',
+                'Bridal': 'fa-crown'
+            };
+
+            grid.innerHTML = data.services.map(service => {
+                let icon = 'fa-star';
+                for (let key in icons) {
+                    if (service.name.includes(key)) {
+                        icon = icons[key];
+                        break;
+                    }
+                }
+
+                return `
+                    <div class="col-md-6 col-lg-4">
+                        <div class="service-option" onclick="selectService(${service.id}, '${service.name.replace(/'/g, "\\'")}', ${service.duration}, ${service.price})">
+                            <div class="text-center mb-3">
+                                <i class="fas ${icon} fa-3x text-primary"></i>
+                            </div>
+                            <h5 class="text-center mb-2">${service.name}</h5>
+                            <p class="text-muted text-center small">${service.description || ''}</p>
+                            <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+                                <span class="text-primary fw-bold fs-5">$${service.price}</span>
+                                <span class="text-muted"><i class="far fa-clock me-1"></i>${service.duration} min</span>
                             </div>
                         </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
+        })
+        .catch(error => {
+            console.error('Error loading services:', error);
+            document.getElementById('servicesGrid').innerHTML =
+                '<div class="col-12 text-center text-danger py-5"><i class="fas fa-exclamation-triangle fa-3x mb-3"></i><p>Failed to load services. Please refresh the page.</p></div>';
         });
 }
 
 // Select service
 function selectService(id, name, duration, price) {
     selectedService = { id, name, duration, price };
-    document.getElementById('dateTimeSection').style.display = 'block';
-    document.getElementById('notesSection').style.display = 'block';
 
     // Highlight selected service
-    document.querySelectorAll('.service-card').forEach(card => {
-        card.classList.remove('border-primary');
+    document.querySelectorAll('.service-option').forEach(card => {
+        card.classList.remove('selected');
     });
-    event.currentTarget.classList.add('border-primary');
+    event.currentTarget.classList.add('selected');
+
+    // Update progress
+    document.getElementById('step1Indicator').classList.add('completed');
+    document.getElementById('step2Indicator').classList.add('active');
+
+    // Show calendar
+    setTimeout(() => {
+        document.getElementById('calendarSection').style.display = 'block';
+        document.getElementById('calendarSection').scrollIntoView({ behavior: 'smooth' });
+        renderCalendar();
+    }, 300);
 }
 
-// Load available times
-document.getElementById('appointmentDate').addEventListener('change', function() {
-    selectedDate = this.value;
-    if (!selectedService) return;
+// Render calendar
+function renderCalendar() {
+    const calendar = document.getElementById('calendar');
+    const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const today = new Date();
+
+    const monthNames = ["January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"];
+
+    let html = `
+        <div class="calendar-header">
+            <button class="btn btn-sm btn-outline-primary" onclick="changeMonth(-1)">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <h5 class="mb-0">${monthNames[currentMonth]} ${currentYear}</h5>
+            <button class="btn btn-sm btn-outline-primary" onclick="changeMonth(1)">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+        <div class="calendar-days">
+            <div class="calendar-day-name">Sun</div>
+            <div class="calendar-day-name">Mon</div>
+            <div class="calendar-day-name">Tue</div>
+            <div class="calendar-day-name">Wed</div>
+            <div class="calendar-day-name">Thu</div>
+            <div class="calendar-day-name">Fri</div>
+            <div class="calendar-day-name">Sat</div>
+        </div>
+        <div class="calendar-grid">
+    `;
+
+    // Empty cells for days before month starts
+    for (let i = 0; i < firstDay; i++) {
+        html += '<div class="calendar-day empty"></div>';
+    }
+
+    // Days of the month
+    for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(currentYear, currentMonth, day);
+        const dateStr = date.toISOString().split('T')[0];
+        const isPast = date < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const isSelected = selectedDate === dateStr;
+
+        html += `
+            <div class="calendar-day ${isPast ? 'disabled' : ''} ${isSelected ? 'selected' : ''}"
+                 onclick="${!isPast ? `selectDate('${dateStr}')` : ''}">
+                ${day}
+            </div>
+        `;
+    }
+
+    html += '</div>';
+    calendar.innerHTML = html;
+}
+
+// Change month
+function changeMonth(delta) {
+    currentMonth += delta;
+    if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+    } else if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+    }
+    renderCalendar();
+}
+
+// Select date
+function selectDate(dateStr) {
+    selectedDate = dateStr;
+    renderCalendar();
+
+    // Update progress
+    document.getElementById('step2Indicator').classList.add('completed');
+    document.getElementById('step3Indicator').classList.add('active');
+
+    // Load time slots
+    loadTimeSlots();
+
+    setTimeout(() => {
+        document.getElementById('timeSection').style.display = 'block';
+        document.getElementById('timeSection').scrollIntoView({ behavior: 'smooth' });
+    }, 300);
+}
+
+// Load time slots
+function loadTimeSlots() {
+    const container = document.getElementById('timeSlots');
+    container.innerHTML = '<div class="text-center py-3"><div class="spinner-border text-primary"></div></div>';
 
     fetch(`/api/bookings/availability?date=${selectedDate}&service_id=${selectedService.id}`)
         .then(response => response.json())
         .then(data => {
-            const timeSelect = document.getElementById('appointmentTime');
-            timeSelect.innerHTML = data.available_slots.length > 0
-                ? data.available_slots.map(slot => `<option value="${slot}">${slot}</option>`).join('')
-                : '<option value="">No available times</option>';
-
-            if (data.available_slots.length > 0) {
-                document.getElementById('summarySection').style.display = 'block';
-                updateSummary();
+            if (!data.available_slots || data.available_slots.length === 0) {
+                container.innerHTML = '<p class="text-center text-muted py-4">No available time slots for this date. Please select another date.</p>';
+                return;
             }
-        });
-});
 
-document.getElementById('appointmentTime').addEventListener('change', function() {
-    selectedTime = this.value;
+            container.innerHTML = data.available_slots.map(slot => `
+                <div class="time-slot" onclick="selectTime('${slot}')">
+                    <i class="far fa-clock me-2"></i>${slot}
+                </div>
+            `).join('');
+        })
+        .catch(error => {
+            container.innerHTML = '<p class="text-center text-danger">Error loading time slots</p>';
+        });
+}
+
+// Select time
+function selectTime(time) {
+    selectedTime = time;
+
+    // Highlight selected time
+    document.querySelectorAll('.time-slot').forEach(slot => {
+        slot.classList.remove('selected');
+    });
+    event.currentTarget.classList.add('selected');
+
+    // Update progress
+    document.getElementById('step3Indicator').classList.add('completed');
+    document.getElementById('step4Indicator').classList.add('active');
+
+    // Show confirmation
     updateSummary();
-});
+    setTimeout(() => {
+        document.getElementById('confirmSection').style.display = 'block';
+        document.getElementById('confirmSection').scrollIntoView({ behavior: 'smooth' });
+    }, 300);
+}
 
 // Update booking summary
 function updateSummary() {
-    if (!selectedService || !selectedDate || !selectedTime) return;
+    const dateObj = new Date(selectedDate + 'T00:00:00');
+    const formattedDate = dateObj.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
     const summary = document.getElementById('bookingSummary');
     summary.innerHTML = `
-        <div class="mb-3">
-            <strong>Service:</strong> ${selectedService.name}<br>
-            <strong>Date:</strong> ${selectedDate}<br>
-            <strong>Time:</strong> ${selectedTime}<br>
-            <strong>Duration:</strong> ${selectedService.duration} minutes<br>
-            <strong>Price:</strong> $${selectedService.price}
+        <h5 class="mb-3"><i class="fas fa-info-circle me-2"></i>Booking Details</h5>
+        <div class="row">
+            <div class="col-md-6 mb-2">
+                <strong><i class="fas fa-spa me-2 text-primary"></i>Service:</strong> ${selectedService.name}
+            </div>
+            <div class="col-md-6 mb-2">
+                <strong><i class="fas fa-dollar-sign me-2 text-primary"></i>Price:</strong> $${selectedService.price}
+            </div>
+            <div class="col-md-6 mb-2">
+                <strong><i class="far fa-calendar me-2 text-primary"></i>Date:</strong> ${formattedDate}
+            </div>
+            <div class="col-md-6 mb-2">
+                <strong><i class="far fa-clock me-2 text-primary"></i>Time:</strong> ${selectedTime}
+            </div>
+            <div class="col-md-6 mb-2">
+                <strong><i class="fas fa-hourglass-half me-2 text-primary"></i>Duration:</strong> ${selectedService.duration} minutes
+            </div>
         </div>
     `;
 }
@@ -269,10 +466,13 @@ function updateSummary() {
 document.getElementById('confirmBookingBtn').addEventListener('click', function() {
     if (!currentUser) {
         document.getElementById('authPrompt').style.display = 'block';
+        document.getElementById('authPrompt').scrollIntoView({ behavior: 'smooth' });
         return;
     }
 
     const notes = document.getElementById('appointmentNotes').value;
+    this.disabled = true;
+    this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Booking...';
 
     fetch('/api/bookings', {
         method: 'POST',
@@ -290,14 +490,27 @@ document.getElementById('confirmBookingBtn').addEventListener('click', function(
     .then(response => response.json())
     .then(data => {
         if (data.message) {
-            alert('Booking created successfully! Pending admin approval.');
+            alert('✅ Booking created successfully! Your appointment is pending admin approval. You will receive a confirmation email shortly.');
             window.location.href = '/';
+        } else {
+            throw new Error(data.error || 'Booking failed');
         }
     })
     .catch(error => {
-        alert('Booking failed: ' + error.message);
+        alert('❌ Booking failed: ' + error.message);
+        this.disabled = false;
+        this.innerHTML = '<i class="fas fa-calendar-check me-2"></i>Confirm Booking';
     });
 });
+
+// Go back function
+function goBack() {
+    if (document.getElementById('confirmSection').style.display === 'block') {
+        document.getElementById('confirmSection').style.display = 'none';
+        document.getElementById('step4Indicator').classList.remove('active', 'completed');
+        document.getElementById('timeSection').scrollIntoView({ behavior: 'smooth' });
+    }
+}
 
 // Login form
 document.getElementById('loginForm').addEventListener('submit', function(e) {
@@ -316,9 +529,11 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
         if (data.access_token) {
             localStorage.setItem('access_token', data.access_token);
             location.reload();
+        } else {
+            throw new Error(data.error || 'Login failed');
         }
     })
-    .catch(error => alert('Login failed'));
+    .catch(error => alert('Login failed: ' + error.message));
 });
 
 // Register form
@@ -341,29 +556,15 @@ document.getElementById('registerForm').addEventListener('submit', function(e) {
         if (data.access_token) {
             localStorage.setItem('access_token', data.access_token);
             location.reload();
+        } else {
+            throw new Error(data.error || 'Registration failed');
         }
     })
-    .catch(error => alert('Registration failed'));
+    .catch(error => alert('Registration failed: ' + error.message));
 });
 
 // Initialize
 checkAuth();
 loadServices();
 </script>
-
-<style>
-.service-card {
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.service-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-
-.border-primary {
-    border: 2px solid #0d6efd !important;
-}
-</style>
 {% endblock %}
